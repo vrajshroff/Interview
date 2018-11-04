@@ -1,1 +1,3 @@
-This is one of the script files that was used to collect residential real estate data. This file collectes data from one of the Master Listings Services and returns a CSV file with detailed information about the number of properties according to property type and year sold.
+This is one of the script files that were used to collect residential real estate data. 
+This file collectes data from one of the Master Listings Services and returns a CSV file with the detailed information 
+about the number of properties according to the property type and the year of sale.
