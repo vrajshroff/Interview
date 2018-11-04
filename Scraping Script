@@ -1,0 +1,121 @@
+from selenium import webdriver
+import time
+
+#Open Chrome
+driver = webdriver.Chrome()
+driver.implicitly_wait(30)
+
+#Enter username and password
+driver.get("https://www.trendmls.com/Default.aspx")
+time.sleep(1)
+driver.find_element_by_xpath('//*[@id="ctl00_cb_txtTrendLoginName"]').send_keys("Username")
+driver.find_element_by_xpath('//*[@id="ctl00_cb_txtTrendPassword"]').send_keys("Password")
+driver.find_element_by_xpath('//*[@id="ctl00_cb_btnLogin"]').click()
+driver.get("http://matrixweb.trendmls.com/Matrix/Search/Residential/ResidentialListingSearch")
+
+#Range elements
+allRanges = ['//*[@id="FmFm11_Ctrl36_101_Ctrl36_TB"]', '//*[@id="FmFm11_Ctrl36_1080_Ctrl36_TB"]',
+             '//*[@id="FmFm11_Ctrl36_103_Ctrl36_TB"]', '//*[@id="FmFm11_Ctrl36_1081_Ctrl36_TB"]',
+             '//*[@id="FmFm11_Ctrl36_104_Ctrl36_TB"]', '//*[@id="FmFm11_Ctrl36_106_Ctrl36_TB"]',
+             '//*[@id="FmFm11_Ctrl36_1083_Ctrl36_TB"]', '//*[@id="FmFm11_Ctrl36_105_Ctrl36_TB"]',
+             '//*[@id="FmFm11_Ctrl36_1084_Ctrl36_TB"]']
+
+#Check-box elements
+allCheckBoxes = ['//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[2]/td[1]/div/input',
+                 '//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[3]/td[1]/div/input',
+                 '//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[4]/td[1]/div/input',
+                 '//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[5]/td[1]/div/input',
+                 '//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[6]/td[1]/div/input',
+                 '//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[7]/td[1]/div/input',
+                 '//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[8]/td[1]/div/input',
+                 '//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[9]/td[1]/div/input',
+                 '//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[10]/td[1]/div/input']
+
+#List of status for csv
+statusList = ["Active\t", "Active No Showings\t", "Pending\t", "Temporarily Off Market\t", "Settled\t", "Expired\t", "Expired Relisted\t", "Withdrawn\t", "Withdrawn Relisted\t"]
+
+#Screenshot tags
+screenshotList = ["Active", "Active No Showings", "Pending", "Temporarily Off Market", "Settled", "Expired", "Expired Relisted", "Withdrawn", "Withdrawn Relisted"]
+
+#Prepare CSV
+resultFile = open("Trend Data Validation.csv", 'a')
+resultFile.write("Statuses\Year\t1990-2006\t2007\t2008\t2009\t2010\t2011\t2012\t2013\t2014\t2015\t2016\t2017\t2018\n")
+resultFile.close()
+
+#Get into the view
+time.sleep(2)
+e = driver.find_element_by_xpath('//*[@id="m_sfcSearch"]/div/table/tbody/tr[16]/td[2]/table/tbody/tr[1]/td/table/tbody/tr/td[2]/table/tbody/tr[3]/td[1]/div/input')
+driver.execute_script("arguments[0].scrollIntoView();", e)
+e.click()
+
+#The following nested loops with go through all the date ranges and property types to scrape the number of properties.
+
+#Main loop
+for mainCounter in range(0, 9):
+
+    if mainCounter !=0:
+        elm = driver.find_element_by_xpath(allCheckBoxes[mainCounter])
+        driver.execute_script("arguments[0].scrollIntoView();", elm)
+        elm.click()
+
+    driver.find_element_by_xpath(allRanges[mainCounter]).clear()
+    driver.find_element_by_xpath(allRanges[mainCounter]).send_keys("01/01/1900-12/31/2006")
+    driver.find_element_by_xpath('//*[@id="m_ucSearchButtons_m_lbLiveCount"]').click()
+    time.sleep(1)
+
+    result = driver.find_element_by_xpath('//*[@id="m_lblSqlSearchTime"]/b')
+    text = result.text
+
+    resultFile = open("Trend Data Validation.csv",'a')
+    resultFile.write(statusList[mainCounter])
+    resultFile.write(text)
+    resultFile.write("\t")
+    resultFile.close()
+    time.sleep(1)
+
+    #Screenshot
+    temp = screenshotList[mainCounter] + '_Old.png'
+    tempStr = temp
+    driver.save_screenshot(tempStr)
+    time.sleep(1)
+
+    #Come back to the main page
+    driver.find_element_by_xpath('//*[@id="m_lbRevise"]').click()
+
+    for x in range(2007, 2019):
+        driver.find_element_by_xpath(allRanges[mainCounter]).clear()
+        temp = '01/01/' + str(x) + '-12/31/' + str(x)
+        driver.find_element_by_xpath(allRanges[mainCounter]).send_keys(temp)
+        driver.find_element_by_xpath('//*[@id="m_ucSearchButtons_m_lbLiveCount"]').click()
+        time.sleep(1)
+
+        result = driver.find_element_by_xpath('//*[@id="m_lblSqlSearchTime"]/b')
+        text = result.text
+
+        # Write to File
+        resultFile = open("Trend Data Validation.csv", 'a')
+        resultFile.write(text + "\t")
+        resultFile.close()
+
+        #TakeScreenshot
+        imageName = screenshotList[mainCounter] + '_' + str(x) + '.png'
+        imageNameFinal = imageName
+        driver.save_screenshot(imageNameFinal)
+
+        # Come back to the main page
+        time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="m_lbRevise"]').click()
+
+    e2 = driver.find_element_by_xpath(allCheckBoxes[mainCounter])
+    driver.execute_script("arguments[0].scrollIntoView();", e2)
+    e2.click()
+
+    resultFile = open("Trend Data Validation.csv", 'a')
+    resultFile.write("\n")
+    resultFile.close()
+
+#Closing the browser
+driver.close()
+
+#Checking if program terminated
+print("Vraj, Program Terminated Successfully")
