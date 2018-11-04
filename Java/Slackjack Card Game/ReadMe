@@ -1,0 +1,21 @@
+This is a basic card game: Slaps/SlapJack. Instructions on how to play this are provided as instructed. 
+More information can be found on:https://en.wikipedia.org/wiki/Slapjack.
+
+Description of classes:
+
+1) Card: Specifies usual card fields. Just a usual creation of an object Card.
+
+2) FinalTestCases: A file with test cases for all the helper functions and their activities.
+
+3) Game: The main class which calls GameCourt -- the heart of this game. It also has all the details
+about the GUI part of the project.
+
+4) GameCourt: This  essentially controls the entire game. It ensure proper functionality for each ActionListener
+and starts the game properly by distributing cards. It also has a timer to delay actions of CPU. It also
+resets the game when someone wins. Lastly, it is used for various pop-ups.
+
+5) ReadFile: It reads 3 Best Grabs (highest cards "Collect"ed by the player. It reads the data of the last game.
+As more game are played, other data is ignored.
+
+6) WriteFile: It writes the 3 Best Grabs at the end of each game.
+ 
